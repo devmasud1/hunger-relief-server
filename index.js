@@ -27,6 +27,7 @@ async function run() {
     // await client.connect();
 
     const foodCollection = client.db('hungerRelief').collection('foods');
+    const foodRequestCollection = client.db('hungerRelief').collection('foodRequests');
 
     app.get('/api/v1/foods', async(req, res) => {
         const result = await foodCollection.find().toArray();
@@ -39,6 +40,13 @@ async function run() {
       const result = await foodCollection.findOne(query);
       res.send(result);
     })
+
+
+    app.post("/api/v1/food-request", async (req, res) => {
+      const foodRequest = req.body;
+      const result = await foodRequestCollection.insertOne(foodRequest);
+      res.send(result);
+    });
 
 
     // Send a ping to confirm a successful connection
