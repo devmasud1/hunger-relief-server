@@ -11,8 +11,6 @@ app.use(cors())
 app.use(express.json())
 
 
-
-
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.aunb3y8.mongodb.net/?retryWrites=true&w=majority`;
 
 const client = new MongoClient(uri, {
@@ -27,6 +25,14 @@ async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
     await client.connect();
+
+    const foodCollection = client.db('hungerRelief').collection('foods');
+
+    app.get('/api/v1/foods', async(req, res) => {
+        const result = await foodCollection.find().toArray();
+        res.send(result);
+    })
+
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log("connected to MongoDB!");
