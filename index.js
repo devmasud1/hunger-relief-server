@@ -51,6 +51,16 @@ async function run() {
       res.send(result);
     });
 
+    app.get("/api/v1/food", async (req, res) => {
+      let query = {};
+      if (req.query?.email) {
+        query = { donator_email: req.query.email };
+
+        const result = await foodCollection.find(query).toArray();
+        res.send(result);
+      }
+    });
+
     //add food by user api end
 
     //Food Request api start here
