@@ -61,6 +61,14 @@ async function run() {
       }
     });
 
+
+    app.delete("/api/v1/food/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await foodCollection.deleteOne(query);
+      res.send(result);
+    });
+
     //add food by user api end
 
     //Food Request api start here
