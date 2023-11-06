@@ -42,11 +42,26 @@ async function run() {
     })
 
 
+    //Food Request api
     app.post("/api/v1/food-request", async (req, res) => {
       const foodRequest = req.body;
       const result = await foodRequestCollection.insertOne(foodRequest);
       res.send(result);
     });
+
+    app.get('/api/v1/food-request', async(req, res) => {
+      let query = {};
+      if (req.query?.email) {
+        query = { user_email: req.query.email};
+
+        const options = {
+          projection: { donar_name: 1, pickup_location: 1, expired_date: 1, request_date: 1, donation_money: 1 },
+        };
+
+        const result =await foodRequestCollection.find(query, options).toArray();
+        res.send(result);
+      }
+    })
 
 
     // Send a ping to confirm a successful connection
