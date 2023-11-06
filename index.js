@@ -42,7 +42,7 @@ async function run() {
     })
 
 
-    //Food Request api
+    //Food Request api start here
     app.post("/api/v1/food-request", async (req, res) => {
       const foodRequest = req.body;
       const result = await foodRequestCollection.insertOne(foodRequest);
@@ -55,7 +55,7 @@ async function run() {
         query = { user_email: req.query.email};
 
         const options = {
-          projection: { donar_name: 1, pickup_location: 1, expired_date: 1, request_date: 1, donation_money: 1 },
+          projection: { donar_name: 1, pickup_location: 1, expired_date: 1, request_date: 1, donation_money: 1, status: 1 },
         };
 
         const result =await foodRequestCollection.find(query, options).toArray();
@@ -63,6 +63,27 @@ async function run() {
       }
     })
 
+    app.delete('/api/v1/food-request/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await foodRequestCollection.deleteOne(query);
+      res.send(result);
+    });
+
+    app.patch('/api/v1/food-request/:id', async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const updatedStatus = req.body;
+      const updateDoc = {
+        $set: {
+          status: updatedStatus.status,
+        },
+      };
+      const result = await foodRequestCollection.updateOne(filter, updateDoc);
+      res.send(result);
+    });
+
+    //Food Request api close
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
