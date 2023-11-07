@@ -69,6 +69,27 @@ async function run() {
       res.send(result);
     });
 
+    app.put("/api/v1/food/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const updatedFood = req.body;
+      const updateDoc = {
+        $set: {
+          food_name: updatedFood.food_name,
+          food_image: updatedFood.food_image,
+          food_quantity: updatedFood.food_quantity,
+          pickup_location: updatedFood.pickup_location,
+          expired_date: updatedFood.expired_date,
+          additional_notes: updatedFood.additional_notes,
+          donar_name: updatedFood.donar_name,
+          donator_email: updatedFood.donator_email,
+          donator_image: updatedFood.donator_image,
+          food_status: updatedFood.food_status,
+        },
+      };
+      const result = await foodCollection.updateOne(filter, updateDoc);
+      res.send(result);
+    });
     //add food by user api end
 
     //Food Request api start here
