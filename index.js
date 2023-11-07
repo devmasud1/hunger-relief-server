@@ -61,7 +61,6 @@ async function run() {
       }
     });
 
-
     app.delete("/api/v1/food/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
@@ -107,6 +106,7 @@ async function run() {
         const options = {
           projection: {
             donar_name: 1,
+            donar_email: 1,
             pickup_location: 1,
             expired_date: 1,
             request_date: 1,
