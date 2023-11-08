@@ -1,5 +1,7 @@
 const express = require("express");
 const cors = require("cors");
+var jwt = require("jsonwebtoken");
+const cookieParser = require("cookie-parser");
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 require("dotenv").config();
 const app = express();
@@ -7,8 +9,20 @@ const app = express();
 const port = process.env.PORT || 5000;
 
 //middleware
-app.use(cors());
+
+app.use(
+  cors({
+    origin: [
+      "http://localhost:5173",
+      "https://hunger-relief0.web.app",
+      "https://hunger-relief0.firebaseapp.com",
+    ],
+    credentials: true,
+  })
+);
+
 app.use(express.json());
+app.use(cookieParser());
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.aunb3y8.mongodb.net/?retryWrites=true&w=majority`;
 
@@ -29,6 +43,32 @@ async function run() {
     const foodRequestCollection = client
       .db("hungerRelief")
       .collection("foodRequests");
+
+    //jwt api
+    app.post("/jwt", async (req, res) => {
+      const user = req.body;
+      console.log("user for token", user);
+      const token = jwt.sign(user, process.env.SECRET_KEY, { expiresIn: "1h" });
+
+      res
+        .cookie("token", token, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === "production" ? true : false,
+          sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
+        })
+        .send({ success: true });
+    });
+
+    app.post("/logout", async (req, res) => {
+      res
+        .clearCookie("token", {
+          maxAge: 0,
+          secure: process.env.NODE_ENV === "production" ? true : false,
+          sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
+        })
+        .send({ success: true });
+    });
+    //jwt api end
 
     //foods api here
     app.get("/api/v1/foods", async (req, res) => {
@@ -98,7 +138,7 @@ async function run() {
       res.send(result);
     });
 
-    app.get("/api/v1/food-request", async (req, res) => {
+    app.get("/api/v1/food-request",  async (req, res) => {
       let query = {};
       if (req.query?.email) {
         query = { user_email: req.query.email };
