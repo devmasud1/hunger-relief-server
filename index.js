@@ -1,6 +1,6 @@
 const express = require("express");
 const cors = require("cors");
-var jwt = require("jsonwebtoken");
+const jwt = require("jsonwebtoken");
 const cookieParser = require("cookie-parser");
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 require("dotenv").config();
@@ -9,11 +9,10 @@ const app = express();
 const port = process.env.PORT || 5000;
 
 //middleware
-
 app.use(
   cors({
     origin: [
-      "http://localhost:5173",
+      // "http://localhost:5173",
       "https://hunger-relief0.web.app",
       "https://hunger-relief0.firebaseapp.com",
     ],
@@ -34,6 +33,22 @@ const client = new MongoClient(uri, {
   },
 });
 
+// middlewares
+const verifyToken = (req, res, next) => {
+  const token = req?.cookies?.token;
+
+  if (!token) {
+    return res.status(401).send({ message: "unauthorized access" });
+  }
+  jwt.verify(token, process.env.SECRET_KEY, (err, decoded) => {
+    if (err) {
+      return res.status(401).send({ message: "unauthorized access" });
+    }
+    req.user = decoded;
+    next();
+  });
+};
+
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
@@ -47,7 +62,6 @@ async function run() {
     //jwt api
     app.post("/jwt", async (req, res) => {
       const user = req.body;
-      console.log("user for token", user);
       const token = jwt.sign(user, process.env.SECRET_KEY, { expiresIn: "1h" });
 
       res
@@ -91,7 +105,7 @@ async function run() {
       res.send(result);
     });
 
-    app.get("/api/v1/food", async (req, res) => {
+    app.get("/api/v1/food", verifyToken, async (req, res) => {
       let query = {};
       if (req.query?.email) {
         query = { donator_email: req.query.email };
@@ -138,7 +152,7 @@ async function run() {
       res.send(result);
     });
 
-    app.get("/api/v1/food-request",  async (req, res) => {
+    app.get("/api/v1/food-request", verifyToken, async (req, res) => {
       let query = {};
       if (req.query?.email) {
         query = { user_email: req.query.email };
